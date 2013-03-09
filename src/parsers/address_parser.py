@@ -28,6 +28,10 @@ streetnumber = originalTextFor( Word(nums) +
                  Optional(OPT_DASH + "1/2") +
                  Optional(numberSuffix) )
 
+#nsew = (oneOf("N S E W North South East West NW NE SW SE") + Optional(".").suppress()).setName("direction")
+#direction = originalTextFor(nsew)
+direction_ = Combine(MatchFirst(map(Keyword, "N S E W North South East West NW NE SW SE".split())) + Optional(".").suppress())
+
 # just a basic word of alpha characters, Maple, Main, etc.
 name = ~numberSuffix + Word(alphas)
 
@@ -36,14 +40,13 @@ type_ = Combine( MatchFirst(map(Keyword,"Street St Boulevard Blvd Lane Ln Road R
                         "Circle Cir Cove Cv Drive Dr Parkway Pkwy Court Ct Square Sq"
                         "Loop Lp".split())) + Optional(".").suppress())
 
-# direction
-nsew = Combine(oneOf("N S E W North South East West NW NE SW SE") + Optional("."))
-
 # street name
-streetName = (Combine( Optional(nsew) + streetnumber + 
+streetName = (Combine( streetnumber + 
                         Optional("1/2") + 
                         Optional(numberSuffix), joinString=" ", adjacent=False )
-                ^ Combine(~numberSuffix + OneOrMore(~type_ + Combine(Word(alphas) + Optional("."))), joinString=" ", adjacent=False) 
+                ^ Combine(~numberSuffix + direction_)
+                ^ Combine(OneOrMore(~type_ + Combine(Word(alphas) + Optional(".")) + ~direction_), joinString=" ", adjacent=False) 
+                ^ Combine(~type_ + direction_)
                 ^ Combine("Avenue" + Word(alphas), joinString=" ", adjacent=False)).setName("streetName")
 
 # PO Box handling
@@ -52,7 +55,8 @@ poBoxRef = ((acronym("PO") | acronym("APO") | acronym("AFP")) +
              Optional(CaselessLiteral("BOX"))) + Word(alphanums)("boxnumber")
 
 # basic street address
-streetReference = streetName.setResultsName("name") + Optional(type_).setResultsName("type")
+
+streetReference = Optional(direction_).setResultsName("prefix_direction") + streetName.setResultsName("name") + Optional(type_).setResultsName("type") + Optional(direction_).setResultsName("suffix_direction")
 direct = housenumber.setResultsName("number") + streetReference
 intersection = ( streetReference.setResultsName("crossStreet") + 
                  ( oneOf('@ &') | Keyword("and",caseless=True)) +

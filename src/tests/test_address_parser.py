@@ -29,7 +29,28 @@ class Test(unittest.TestCase):
         self.assertEqual("Rd", result.crossStreet.type)
         self.assertEqual("Main", result.street.name)
         self.assertEqual("St", result.street.type)
-        
+    
+    def test_address_parser_direction(self):
+        result = ap.streetAddress.parseString("3120 N De la Cruz Boulevard")
+        self.assertIsNotNone(result)
+        self.assertEqual("N", result.street.prefix_direction)
+        self.assertEqual("3120", result.street.number.strip())
+        self.assertEqual("De la Cruz", result.street.name)
+        self.assertEqual("Boulevard", result.street.type)
+
+    def test_address_parser_weird_direction(self):
+        result = ap.streetAddress.parseString("123 North South St")
+        self.assertEqual("North", result.street.prefix_direction)
+        self.assertEqual("South", result.street.name)
+        self.assertEqual("St", result.street.type)
+    
+    def test_address_parser_direction_suffix(self):
+        result = ap.streetAddress.parseString("123 North South St N")
+        self.assertEqual("N", result.street.suffix_direction)
+        self.assertEqual("North", result.street.prefix_direction)
+        self.assertEqual("South", result.street.name)
+        self.assertEqual("St", result.street.type)
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
