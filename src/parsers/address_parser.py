@@ -43,10 +43,8 @@ type_ = Combine( MatchFirst(map(Keyword,"Street St Boulevard Blvd Lane Ln Road R
 # street name
 streetName = (Combine( streetnumber + 
                         Optional("1/2") + 
-                        Optional(numberSuffix), joinString=" ", adjacent=False )
-                ^ Combine(~numberSuffix + direction_)
-                ^ Combine(OneOrMore(~type_ + Combine(Word(alphas) + Optional(".")) + ~direction_), joinString=" ", adjacent=False) 
-                ^ Combine(~type_ + direction_)
+                        Optional(numberSuffix), joinString=" ", adjacent=False )                
+                ^ Combine(~numberSuffix + OneOrMore(~type_ + Combine(Word(alphas) + Optional("."))), joinString=" ", adjacent=False) 
                 ^ Combine("Avenue" + Word(alphas), joinString=" ", adjacent=False)).setName("streetName")
 
 # PO Box handling
@@ -56,12 +54,18 @@ poBoxRef = ((acronym("PO") | acronym("APO") | acronym("AFP")) +
 
 # basic street address
 
-streetReference = Optional(direction_).setResultsName("prefix_direction") + streetName.setResultsName("name") + Optional(type_).setResultsName("type") + Optional(direction_).setResultsName("suffix_direction")
+streetReference =  streetName.setResultsName("name") + Optional(type_).setResultsName("type") 
+prefix_direction = housenumber.setResultsName("number") + direction_.setResultsName("prefix_direction") + streetReference
+suffix_direction = housenumber.setResultsName("number") + streetReference + direction_.setResultsName("suffix_direction")
+direction = housenumber.setResultsName("number") + Optional(direction_).setResultsName("prefix_direction") + streetReference + Optional(direction_).setResultsName("suffix_direction")
 direct = housenumber.setResultsName("number") + streetReference
+ 
 intersection = ( streetReference.setResultsName("crossStreet") + 
                  ( oneOf('@ &') | Keyword("and",caseless=True)) +
                  streetReference.setResultsName("street") )
 streetAddress = ( poBoxRef("street")
+                  ^ prefix_direction.setResultsName("street")
+                  ^ suffix_direction.setResultsName("street")
                   ^ direct.setResultsName("street")
                   ^ streetReference.setResultsName("street")
                   ^ intersection )
