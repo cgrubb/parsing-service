@@ -53,17 +53,21 @@ poBoxRef = ((acronym("PO") | acronym("APO") | acronym("AFP")) +
              Optional(CaselessLiteral("BOX"))) + Word(alphanums)("boxnumber")
 
 # basic street address
-
-streetReference =  streetName.setResultsName("name") + Optional(type_).setResultsName("type") 
+streetReference =  streetName.setResultsName("name") + Optional(type_).setResultsName("type")
+# street address with direction prefix 
 prefix_direction = housenumber.setResultsName("number") + direction_.setResultsName("prefix_direction") + streetReference
+# street address with direction suffix
 suffix_direction = housenumber.setResultsName("number") + streetReference + direction_.setResultsName("suffix_direction")
-direction = housenumber.setResultsName("number") + Optional(direction_).setResultsName("prefix_direction") + streetReference + Optional(direction_).setResultsName("suffix_direction")
+# street address with both direction prefix and suffix
+both_direction = housenumber.setResultsName("number") + direction_.setResultsName("prefix_direction") + streetReference + direction_.setResultsName("suffix_direction")
+# street address with no direction prefix or suffix
 direct = housenumber.setResultsName("number") + streetReference
  
 intersection = ( streetReference.setResultsName("crossStreet") + 
                  ( oneOf('@ &') | Keyword("and",caseless=True)) +
                  streetReference.setResultsName("street") )
 streetAddress = ( poBoxRef("street")
+                  ^ both_direction.setResultsName("street")
                   ^ prefix_direction.setResultsName("street")
                   ^ suffix_direction.setResultsName("street")
                   ^ direct.setResultsName("street")

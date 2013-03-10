@@ -79,8 +79,9 @@ class Test(unittest.TestCase):
     
     def test_address_parser_direction_suffix(self):
         result = ap.streetAddress.parseString("123 North South St N")
+        self.assertEqual("North", result.street.prefix_direction)
         self.assertEqual("N", result.street.suffix_direction)
-        self.assertEqual("North South", result.street.name)
+        self.assertEqual("South", result.street.name)
         self.assertEqual("St", result.street.type)
     
     def test_street_name_that_looks_like_prefix(self):        
