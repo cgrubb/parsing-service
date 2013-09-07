@@ -63,7 +63,7 @@ both_direction = housenumber.setResultsName("number") + direction_.setResultsNam
 # street address with no direction prefix or suffix
 direct = housenumber.setResultsName("number") + streetReference
  
-intersection = ( streetReference.setResultsName("crossStreet") + 
+intersection = (streetReference.setResultsName("crossStreet") + 
                  ( oneOf('@ &') | Keyword("and",caseless=True)) +
                  streetReference.setResultsName("street") )
 streetAddress = ( poBoxRef("street")
